@@ -1,0 +1,1 @@
+-- For database scripts (schema, table creation and data insertion)

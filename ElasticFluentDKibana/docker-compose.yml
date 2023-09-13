@@ -1,0 +1,48 @@
+---
+version: '3.9'
+
+services:
+  web:
+    image: httpd
+    container_name: web
+    depends_on:
+      - fluentd
+    ports:
+      - "80:80"
+    links:
+      - fluentd
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: localhost:24224
+        tag: httpd.access
+
+  fluentd:
+    container_name: fluentd
+    build: ./fluentd
+    volumes:
+      - ./fluentd/conf:/fluentd/etc
+    links:
+      - "elasticsearch"
+    ports:
+      - "24224:24224"
+      - "24224:24224/udp"
+
+  elasticsearch:
+    image: elasticsearch:7.17.6
+    container_name: elasticsearch
+    expose:
+      - 9200
+    ports:
+      - "9200:9200"
+    environment:
+      - "discovery.type=single-node"
+      - xpack.security.enabled=false
+
+  kibana:
+    image: kibana:7.17.6
+    container_name: kibana
+    links:
+      - "elasticsearch"
+    ports:
+      - "5601:5601"
